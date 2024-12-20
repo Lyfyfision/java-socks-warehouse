@@ -43,6 +43,8 @@ class SocksControllerTest {
     @DisplayName("Request parameters converting into filter properly")
     void shouldHandleRequestParamAndConvertToCottonPercentageFilterObject() throws Exception {
         // Arrange
+        int expectedMinPercent = 30;
+        int expectedMaxPercent = 70;
         when(service.getSocksCount(eq("blue"), any(CottonPercentageFilter.class))).thenReturn(25);
 
         // Act
@@ -59,7 +61,7 @@ class SocksControllerTest {
 
         CottonPercentageFilter filter = captor.getValue();
         assertEquals("range", filter.getOperator());
-        assertEquals(30, filter.getMinValue());
-        assertEquals(70, filter.getMaxValue());
+        assertEquals(expectedMinPercent, filter.getMinValue());
+        assertEquals(expectedMaxPercent, filter.getMaxValue());
     }
 }

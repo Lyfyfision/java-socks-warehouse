@@ -100,7 +100,7 @@ class SocksServiceImplTest {
         // Act
         assertThrows(InsufficientStockException.class, () -> service.registerSocksOutcome(outcomeRequest));
 
-        // Verify save was never called
+        // Assert
         verify(repository, never()).save(any(Socks.class));
     }
 }
