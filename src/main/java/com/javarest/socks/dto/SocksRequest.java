@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.NonNullApi;
 
 @Data
 @Builder

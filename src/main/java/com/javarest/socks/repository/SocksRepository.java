@@ -15,6 +15,9 @@ public interface SocksRepository extends JpaRepository<Socks, Long> {
 
     Optional<Socks> findByColorAndCottonPercentage(String color, int cottonPercentage);
 
+    @Override
+    Optional<Socks> findById(Long id);
+
     List<Socks> findByColor(String color, Sort sort);
     List<Socks> findByColorAndCottonPercentageBetween(String color, int minPercentage, int maxPercentage, Sort sort);
     List<Socks> findAll(Sort sort);

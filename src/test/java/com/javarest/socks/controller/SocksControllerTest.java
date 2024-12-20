@@ -20,9 +20,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(SocksController.class)
@@ -34,10 +34,6 @@ class SocksControllerTest {
 
     @MockitoBean
     private SocksService service;
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     @DisplayName("Request parameters converting into filter properly")
@@ -63,5 +59,33 @@ class SocksControllerTest {
         assertEquals("range", filter.getOperator());
         assertEquals(expectedMinPercent, filter.getMinValue());
         assertEquals(expectedMaxPercent, filter.getMaxValue());
+    }
+
+    @Test
+    @DisplayName("Should return 400 if invalid sorting direction provided")
+    void shouldReturnBadRequestOnInvalidSortDirection() throws Exception {
+        mockMvc.perform(get("/all")
+                        .param("sortDirection", "invalid"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("""
+                        {
+                            "errorMsg": "Invalid sorting direction. Please pick 'asc' for ascending and 'desc' for descending"
+                        }
+                        """));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when invalid socks income request is provided")
+    void shouldFailOnInvalidSocksIncomeRequest() throws Exception {
+        mockMvc.perform(post("/income")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "color": "blue",
+                                    "cottonPercentage": -10,
+                                    "quantity": 0
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
     }
 }

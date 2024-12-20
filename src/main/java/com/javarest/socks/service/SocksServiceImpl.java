@@ -4,6 +4,7 @@ import com.javarest.socks.dto.CottonPercentageFilter;
 import com.javarest.socks.dto.SocksRequest;
 import com.javarest.socks.exception.constant.ErrorMessage;
 import com.javarest.socks.exception.exceptions.InsufficientStockException;
+import com.javarest.socks.exception.exceptions.InvalidSortDirectionException;
 import com.javarest.socks.exception.exceptions.NoFilterParametersException;
 import com.javarest.socks.exception.exceptions.SocksNotFoundException;
 import com.javarest.socks.model.Socks;
@@ -211,6 +212,9 @@ public class SocksServiceImpl implements SocksService {
         }
         if (sortDirection == null || sortDirection.isBlank()) {
             sortDirection = "ASC";
+        }
+        if (!sortDirection.equalsIgnoreCase("DESC") && !sortDirection.equalsIgnoreCase("ASC")) {
+            throw new InvalidSortDirectionException("Unsupported sorting direction - " + sortDirection);
         }
         Sort.Direction direction = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         return Sort.by(direction, sortField);

@@ -19,7 +19,15 @@ public enum ErrorMessage {
 
     NO_FILTERS("Please provide filter parameters like socks color and/or cotton percentage to continue."),
 
-    GENERIC_ERROR("An unexpected error occurred. Please stand by and wait 2-3 minutes before new try.");
+    GENERIC_ERROR("An unexpected error occurred. Please stand by and wait 2-3 minutes before new try."),
+
+    INVALID_SOCKS_PARAMETERS("""
+            Invalid socks parameters provided. Valid parameters are:\s
+            - color (any),\s
+            - cottonPercentage (only positive digit up to 100)\s
+            - quantity (only positive digit)."""),
+
+    INVALID_SORT_DIRECTION("Invalid sorting direction. Please pick 'asc' for ascending and 'desc' for descending");
 
     private final String msg;
 
