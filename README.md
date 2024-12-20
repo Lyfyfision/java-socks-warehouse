@@ -95,7 +95,7 @@ Ensure the following are installed on your machine:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repository/socks-management.git
+   git clone https://github.com/Lyfyfision/java-socks-warehouse.git
    cd socks-management
    ```
 
