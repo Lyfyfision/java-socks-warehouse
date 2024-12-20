@@ -20,9 +20,10 @@ class SocksServiceImplTest {
     @InjectMocks
     private SocksServiceImpl service;
 
-    // Helper objects for tests
     private SocksRequest sampleRequest;
+
     private Socks sampleSocks;
+
     @BeforeEach
     void setUp() {
         sampleRequest = SocksRequest.builder()
@@ -38,4 +39,7 @@ class SocksServiceImplTest {
                 .quantity(50)
                 .build();
     }
+
+
+
 }
