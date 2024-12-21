@@ -12,9 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,7 +101,4 @@ class SocksServiceImplTest {
         // Assert
         verify(repository, never()).save(any(Socks.class));
     }
-
-
-
 }

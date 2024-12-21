@@ -32,7 +32,7 @@ The **Socks Management API** provides a RESTful service for managing inventory a
 
 3. **Get Socks Count with Filters**
     - **Endpoint**: `GET /api/socks`
-    - **Functionality**: Retrieves the total quantity of socks that satisfy the provided **color**, **cotton percentage range or condition** filters.
+    - **Functionality**: Retrieves the total **quantity** of socks that satisfy the provided **color**, **cotton percentage range or condition** filters.
     - **Filtering Options**:
         - Filter by a specific cotton percentage range: `30-70`, using the range operator (`-`).
         - Filter by operators `<`, `>` or `=` for cotton percentage.
@@ -43,9 +43,15 @@ The **Socks Management API** provides a RESTful service for managing inventory a
 
 4. **Sorted Inventory Retrieval**
     - **Endpoint**: `GET /api/socks/all`
-    - **Functionality**: Returns the sorted list of existing socks based on the provided sorting field.
+    - **Functionality**: Returns the **sorted list** of existing socks based on the provided sorting fields.
     - **Supported Parameters**:
         - `sortBy`: Field to sort by (e.g., `color`, `cottonPercentage`, etc.).
+        - `sortDirection`: Field to set sorting direction(`asc` for Ascending and `desc`for Descending).
+        - `color` : Field to retrieve socks by color.
+        - `cottonPercentage` : Field to retrieve socks by cotton.
+   - **Example Requests**:
+      - `/api/socks/all?cottonPercentage=>50&sortBy=color&sortDirection=asc`
+      - `/api/socks/all?color=white&sortBy=quantity`
 
 5. **Updating Sock Information**
     - **Endpoint**: `PUT /api/socks/{id}`
@@ -73,12 +79,12 @@ The **Socks Management API** provides a RESTful service for managing inventory a
 
 The following technologies and tools have been utilized in the design and implementation of the Socks Management API:
 - **Programming Language**: Java 17
-- **Spring Framework**: Spring Boot 3.4 for creating REST APIs
-- **Database**: PostgreSQL, used for storing sock inventory data
+- **Spring Framework**: Spring Boot 3.4
+- **Database**: PostgreSQL
 - **File Upload**: Supports batch uploads in `.xlsx` (Excel) format
 - **Build Tool**: Gradle
-- **Testing Tools**: JUnit and Mockito for unit testing and mocking repository dependencies
-- **API Documentation**: Swagger/OpenAPI for interactive API documentation
+- **Testing Tools**: JUnit, Mockito, H2
+- **API Documentation**: Swagger/OpenAPI 
 
 ---
 

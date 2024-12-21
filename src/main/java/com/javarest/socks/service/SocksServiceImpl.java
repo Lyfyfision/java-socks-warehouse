@@ -3,10 +3,7 @@ package com.javarest.socks.service;
 import com.javarest.socks.dto.CottonPercentageFilter;
 import com.javarest.socks.dto.SocksRequest;
 import com.javarest.socks.exception.constant.ErrorMessage;
-import com.javarest.socks.exception.exceptions.InsufficientStockException;
-import com.javarest.socks.exception.exceptions.InvalidSortDirectionException;
-import com.javarest.socks.exception.exceptions.NoFilterParametersException;
-import com.javarest.socks.exception.exceptions.SocksNotFoundException;
+import com.javarest.socks.exception.exceptions.*;
 import com.javarest.socks.model.Socks;
 import com.javarest.socks.repository.SocksRepository;
 import lombok.AllArgsConstructor;
@@ -81,9 +78,25 @@ public class SocksServiceImpl implements SocksService {
                 id, updatedSocks.getColor(), updatedSocks.getCottonPercentage(), updatedSocks.getQuantity());
     }
 
+    /**
+     * Retrieves a sorted list of socks based on the specified filter parameters.
+     * The method handles different cases of filtering:
+     * - If neither `color` nor `filter` is provided, it returns all socks.
+     * - If only `color` is provided, it filters by color.
+     * - If `filter` specifies a range (min and max values), it filters by the range.
+     * - If `filter` specifies an operator (e.g., "<", ">", "="), it filters using the operator.
+     *
+     * @param color          The color of the socks to filter (optional).
+     * @param filter         A CottonPercentageFilter object containing the percentage filter criteria (optional).
+     *                       Can be a range or include a comparison operation.
+     * @param sortField      The field by which to sort the socks (e.g., "color", "quantity").
+     * @param sortDirection  The sort direction, either "asc" (ascending) or "desc" (descending).
+     * @return A list of socks filtered and sorted according to the provided parameters.
+     * @throws com.javarest.socks.exception.exceptions.UnsupportedOperatorException If the operator in the `filter` is unsupported.
+     */
     @Override
     public List<Socks> getAllSocksSorted(String color, CottonPercentageFilter filter, String sortField, String sortDirection) {
-        log.info("Получен запрос на получение носков. Параметры: color={}, cottonPercentageFilter={}, sortField={}, sortDirection={}",
+        log.info("Received a socks Get request. Parameters: color={}, cottonPercentageFilter={}, sortField={}, sortDirection={}",
                 color, filter, sortField, sortDirection);
 
         Sort sort = getSortOrder(sortField, sortDirection);
@@ -92,17 +105,15 @@ public class SocksServiceImpl implements SocksService {
             return repository.findAll(sort);
         }
 
-        if (filter != null && filter.isRange()) {
-            return repository.findByColorAndCottonPercentageBetween(
-                    color, filter.getMinValue(), filter.getMaxValue(), sort
-            );
+        if (filter == null) {
+            return handleColorFilterOnly(color, sort);
         }
 
-        if (color != null) {
-            return repository.findByColor(color, sort);
+        if (filter.isRange()) {
+            return handleRangeFilter(color, filter, sort);
         }
 
-        return repository.findAll(sort);
+        return handleOperatorFilter(color, filter, sort);
     }
 
     /**
@@ -201,7 +212,7 @@ public class SocksServiceImpl implements SocksService {
                     : repository.sumQuantityByColorAndCottonPercentage(color, value).orElse(0);
             default -> {
                 log.warn("Unsupported operator: {}", operator);
-                throw new UnsupportedOperationException(ErrorMessage.UNSUPPORTED_OPERATOR.getMsg());
+                throw new UnsupportedOperatorException(ErrorMessage.UNSUPPORTED_OPERATOR.getMsg());
             }
         };
     }
@@ -218,5 +229,31 @@ public class SocksServiceImpl implements SocksService {
         }
         Sort.Direction direction = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         return Sort.by(direction, sortField);
+    }
+
+    private List<Socks> handleColorFilterOnly(String color, Sort sort) {
+        return repository.findByColor(color, sort);
+    }
+
+    private List<Socks> handleRangeFilter(String color, CottonPercentageFilter filter, Sort sort) {
+        if (color != null) {
+            return repository.findByColorAndCottonPercentageBetween(color, filter.getMinValue(), filter.getMaxValue(), sort);
+        }
+        return repository.findByCottonPercentageBetween(filter.getMinValue(), filter.getMaxValue(), sort);
+    }
+
+    private List<Socks> handleOperatorFilter(String color, CottonPercentageFilter filter, Sort sort) {
+        return switch (filter.getOperator()) {
+            case ">" -> color != null
+                    ? repository.findByColorAndCottonPercentageGreaterThan(color, filter.getMinValue(), sort)
+                    : repository.findByCottonPercentageGreaterThan(filter.getMinValue(), sort);
+            case "<" -> color != null
+                    ? repository.findByColorAndCottonPercentageLessThan(color, filter.getMaxValue(), sort)
+                    : repository.findByCottonPercentageLessThan(filter.getMaxValue(), sort);
+            case "=" -> color != null
+                    ? repository.findByColorAndCottonPercentage(color, filter.getMinValue(), sort)
+                    : repository.findByCottonPercentage(filter.getMinValue(), sort);
+            default -> throw new UnsupportedOperatorException(ErrorMessage.UNSUPPORTED_OPERATOR.getMsg());
+        };
     }
 }

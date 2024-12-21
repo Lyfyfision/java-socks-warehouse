@@ -19,8 +19,16 @@ public interface SocksRepository extends JpaRepository<Socks, Long> {
     Optional<Socks> findById(Long id);
 
     List<Socks> findByColor(String color, Sort sort);
+    List<Socks> findByColorAndCottonPercentage(String color, int cottonPercentage, Sort sort);
+    List<Socks> findByCottonPercentageBetween(int minPercentage, int maxPercentage, Sort sort);
     List<Socks> findByColorAndCottonPercentageBetween(String color, int minPercentage, int maxPercentage, Sort sort);
     List<Socks> findAll(Sort sort);
+    List<Socks> findByCottonPercentage(int value, Sort sort);
+    List<Socks> findByCottonPercentageGreaterThan(int minPercentage, Sort sort);
+    List<Socks> findByColorAndCottonPercentageLessThan(String color, Integer maxValue, Sort sort);
+    List<Socks> findByColorAndCottonPercentageGreaterThan(String color, Integer minValue, Sort sort);
+
+    List<Socks> findByCottonPercentageLessThan(int maxPercentage, Sort sort);
 
     @Query("SELECT SUM(s.quantity) FROM Socks s WHERE s.color = :color AND s.cottonPercentage > :cottonPercentage")
     Optional<Integer> sumQuantityByColorAndCottonPercentageGreaterThan(@Param("color") String color, @Param("cottonPercentage") int cottonPercentage);

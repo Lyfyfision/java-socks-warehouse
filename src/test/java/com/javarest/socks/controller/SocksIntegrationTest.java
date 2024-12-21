@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-public class SocksIntegrationTest {
+class SocksIntegrationTest {
 
     @Autowired
     private SocksRepository repository;
@@ -46,6 +46,26 @@ public class SocksIntegrationTest {
                 .cottonPercentage(20)
                 .quantity(43)
                 .build());
+    }
+
+    @Test
+    @DisplayName("Socks can be inserted in DB")
+    void shouldInsertValidSocks() {
+        // Assert
+        String expectedColor = "violet";
+
+        // Act
+        Socks savedSock = repository.save(Socks.builder()
+                .color("violet")
+                .cottonPercentage(55)
+                .quantity(150)
+                .build());
+
+        Socks sock = repository.findById(savedSock.getId()).orElse(null);
+
+        // Assert
+        assertNotNull(sock);
+        assertEquals(expectedColor, sock.getColor());
     }
 
     @Test

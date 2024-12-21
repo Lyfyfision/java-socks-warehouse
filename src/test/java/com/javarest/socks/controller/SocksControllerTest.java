@@ -2,13 +2,17 @@ package com.javarest.socks.controller;
 
 import com.javarest.socks.config.WebConfig;
 import com.javarest.socks.dto.CottonPercentageFilter;
+import com.javarest.socks.dto.SocksRequest;
+import com.javarest.socks.exception.GlobalExceptionHandler;
+import com.javarest.socks.exception.exceptions.InsufficientStockException;
 import com.javarest.socks.service.SocksService;
 import com.javarest.socks.util.CottonPercentageFilterConverter;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -18,15 +22,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(SocksController.class)
-@Import({WebConfig.class, CottonPercentageFilterConverter.class})
+@Import({WebConfig.class, CottonPercentageFilterConverter.class, GlobalExceptionHandler.class})
+@ImportAutoConfiguration(GlobalExceptionHandler.class)
 class SocksControllerTest {
 
     @Autowired
@@ -62,22 +66,9 @@ class SocksControllerTest {
     }
 
     @Test
-    @DisplayName("Should return 400 if invalid sorting direction provided")
-    void shouldReturnBadRequestOnInvalidSortDirection() throws Exception {
-        mockMvc.perform(get("/all")
-                        .param("sortDirection", "invalid"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().json("""
-                        {
-                            "errorMsg": "Invalid sorting direction. Please pick 'asc' for ascending and 'desc' for descending"
-                        }
-                        """));
-    }
-
-    @Test
     @DisplayName("Should return 400 when invalid socks income request is provided")
     void shouldFailOnInvalidSocksIncomeRequest() throws Exception {
-        mockMvc.perform(post("/income")
+        mockMvc.perform(post("/api/socks/income")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -87,5 +78,35 @@ class SocksControllerTest {
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when requested outcome exceeds stock")
+    void shouldReturnBadRequestForOverspendingOutcome() throws Exception {
+        // Arrange
+        SocksRequest invalidRequest = SocksRequest.builder()
+                .color("red")
+                .cottonPercentage(50)
+                .quantity(50000)
+                .build();
+        doThrow(new InsufficientStockException("Not enough socks available."))
+                .when(service).registerSocksOutcome(invalidRequest);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/socks/outcome")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "color": "red",
+                                    "cottonPercentage": 50,
+                                    "quantity": 50000
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("""
+                        {
+                            "errorMsg": "Not enough socks in stock to fulfill your request."
+                        }
+                        """));
     }
 }

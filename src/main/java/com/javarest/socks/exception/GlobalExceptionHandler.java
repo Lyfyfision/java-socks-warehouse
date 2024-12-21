@@ -2,16 +2,14 @@ package com.javarest.socks.exception;
 
 import com.javarest.socks.exception.exceptions.*;
 import com.javarest.socks.exception.response.ErrorResponse;
+import jakarta.validation.ValidationException;
 import org.apache.poi.EmptyFileException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static com.javarest.socks.exception.constant.ErrorMessage.*;
 
@@ -50,13 +48,15 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    @ExceptionHandler({UnsupportedOperationException.class, MethodArgumentTypeMismatchException.class})
+    @ExceptionHandler({UnsupportedOperationException.class, MethodArgumentTypeMismatchException.class,
+            MethodArgumentNotValidException.class, ValidationException.class})
     public ResponseEntity<ErrorResponse> handleUnsupportedOperatorException() {
         ErrorResponse response = new ErrorResponse(UNSUPPORTED_OPERATOR.getMsg());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
+
     @ExceptionHandler(EmptyFileException.class)
     public ResponseEntity<ErrorResponse> handleEmptyFileException() {
         ErrorResponse response = new ErrorResponse(EMPTY_FILE.getMsg());
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
-    @ExceptionHandler({InvalidSortDirectionException.class, NoResourceFoundException.class})
+    @ExceptionHandler(InvalidSortDirectionException.class)
     public ResponseEntity<ErrorResponse> handleInvalidSortDirectionException() {
         ErrorResponse response = new ErrorResponse(INVALID_SORT_DIRECTION.getMsg());
         return ResponseEntity
